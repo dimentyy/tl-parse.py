@@ -1,3 +1,9 @@
-.idea
-dist
 .venv
+
+dist
+
+.idea
+
+.pypirc
+
+.DS_Store

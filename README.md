@@ -4,7 +4,7 @@
 from telethon import TelegramClient
 from dimentyy.tl.parse import BetterParsing
 
-client = TelegramClient(...)
+client: TelegramClient = ...
 client.parse_mode = BetterParsing.HTML()
 
 # From now on, every message will be handled by the 
