@@ -40,7 +40,9 @@ class ParsingContainer:
         if None in args.values():
             raise ValueError("Argument has no default value and no value was passed.")
 
-        current_offset, breaks = self._unclosed_entities.pop(entity, 0)
+        # TODO: mode for handling not opened entities (ignore / raise / full-fill)
+
+        current_offset, breaks = self._unclosed_entities.pop(entity, (0, set()))
         end_offset = self.raw_text_tl_len
 
         # what?

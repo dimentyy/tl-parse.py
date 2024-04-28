@@ -1,5 +1,5 @@
 from html.parser import HTMLParser as PythonsHTMLParser
-from typing import TypeAlias, Literal, Any
+from typing import TypeAlias, Literal, Any, Self
 
 from telethon.tl.types import (MessageEntityBold, MessageEntityItalic, MessageEntityCode,
                                MessageEntityStrike, MessageEntityUnderline, MessageEntityBlockquote,
@@ -56,12 +56,13 @@ class HTMLParser(PythonsHTMLParser):
                 ])}>"""
                 # TODO: just do something with this monster, maybe there's library for that
 
-                raise ValueError(f"Bad HTML-tag: {formatted_tag}")
+                raise ValueError(f"Bad HTML tag: {formatted_tag}")
             else:
                 raise ValueError(f"Unknown '{self.on_unknown_tag}' action on unknown tag.")
 
         entity = self.entity_tags[tag]
 
+        # most used formatting entities
         if entity in PlainEntities:
             self.container.open_entity(entity)
             return
@@ -81,7 +82,20 @@ class HTMLParser(PythonsHTMLParser):
         })
 
     def handle_endtag(self, tag: str):
-        self.container.close_entity(self.entity_tags[tag])
+        if tag in self.entity_tags:
+            self.container.close_entity(self.entity_tags[tag])
+            return
+
+        # pylint: disable=no-else-return
+        if self.on_unknown_tag == "ignore":
+            return
+        elif self.on_unknown_tag == "raise":
+            formatted_tag = f"""</{tag}>"""
+            # TODO: just do something with this monster, maybe there's library for that
+
+            raise ValueError(f"Bad HTML closing tag: {formatted_tag}")
+        else:
+            raise ValueError(f"Unknown '{self.on_unknown_tag}' action on unknown tag.")
 
     def handle_data(self, data: str):  #
         self.container.feed_text(data)
@@ -95,7 +109,7 @@ class HTMLParser(PythonsHTMLParser):
          - Return text & entities.
         """
 
-        self = cls(unknown_tag)
+        self: Self = cls(unknown_tag)
         self.feed(data)
         return self.container.bundle
 
