@@ -5,10 +5,9 @@ from telethon.tl.types import (MessageEntityBold, MessageEntityItalic, MessageEn
                                MessageEntityStrike, MessageEntityUnderline, MessageEntityBlockquote,
                                MessageEntitySpoiler, MessageEntityTextUrl, MessageEntityPre,
                                MessageEntityMentionName, MessageEntityCustomEmoji,
-                               TypeMessageEntity)
+                               TypeMessageEntity, InputMessageEntityMentionName)
 
-from .types import plain_entities
-from .container import ParsingContainer
+from .container import ParsingContainer, PlainEntities
 
 OnUnknownTag: TypeAlias = Literal["ignore", "raise"]
 
@@ -30,10 +29,10 @@ class HTMLParser(PythonsHTMLParser):
         "link": MessageEntityTextUrl,
         "code": MessageEntityCode,
         "pre": MessageEntityPre,
-        "mention": MessageEntityMentionName,
+        "mention": MessageEntityMentionName,  # TODO: replace with InputMessageEntityMentionName
         "spoiler": MessageEntitySpoiler,
         "quote": MessageEntityBlockquote,
-        "custom_emoji": MessageEntityCustomEmoji  # needs testing
+        "custom_emoji": MessageEntityCustomEmoji  # TODO: test
     }
 
     entity_tag_attr_args = {
@@ -55,6 +54,7 @@ class HTMLParser(PythonsHTMLParser):
                 formatted_tag = f"""<{tag}{''.join([
                     key if value is None else f' {key}="{value}"' for key, value in attrs
                 ])}>"""
+                # TODO: just do something with this monster, maybe there's library for that
 
                 raise ValueError(f"Bad HTML-tag: {formatted_tag}")
             else:
@@ -62,7 +62,7 @@ class HTMLParser(PythonsHTMLParser):
 
         entity = self.entity_tags[tag]
 
-        if entity in plain_entities:
+        if entity in PlainEntities:
             self.container.open_entity(entity)
             return
 
@@ -97,4 +97,9 @@ class HTMLParser(PythonsHTMLParser):
 
         self = cls(unknown_tag)
         self.feed(data)
-        return self.container.raw_text, self.container.entities
+        return self.container.bundle
+
+
+__all__ = [
+    'HTMLParser', 'OnUnknownTag'
+]
