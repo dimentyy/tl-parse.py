@@ -11,7 +11,7 @@ only-include = [".fake-src/dimentyy"]
 [project]
 name = "dimentyy.tl-parse"
 description = "Better parsing modes for telethon.TelegramClient"
-version = "0.0.1dev3"
+version = "0.0.1dev4"
 readme = "README.md"
 #requires-python = ">=3.10" #currently unknown
 license = "MIT"

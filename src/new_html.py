@@ -1,6 +1,7 @@
 from html.parser import HTMLParser as PythonsHTMLParser
-from typing import TypeAlias, Literal, Any, Self
+from typing import TypeAlias, Literal, Any, Self, Optional
 
+from telethon import TelegramClient
 from telethon.tl.types import (MessageEntityBold, MessageEntityItalic, MessageEntityCode,
                                MessageEntityStrike, MessageEntityUnderline, MessageEntityBlockquote,
                                MessageEntitySpoiler, MessageEntityTextUrl, MessageEntityPre,
@@ -9,14 +10,17 @@ from telethon.tl.types import (MessageEntityBold, MessageEntityItalic, MessageEn
 
 from .container import ParsingContainer, PlainEntities
 
-OnUnknownTag: TypeAlias = Literal["ignore", "raise"]
+IgnoreUnknownTag: TypeAlias = Literal["ignore"]
+OnUnknownTag: TypeAlias = Literal[IgnoreUnknownTag, "raise"]
 
 
 class HTMLParser(PythonsHTMLParser):
-    def __init__(self, on_unknown_tag: OnUnknownTag):
+    def __init__(self, client: TelegramClient = None, on_unknown_tag: OnUnknownTag = None):
         super().__init__()
 
-        self.on_unknown_tag = on_unknown_tag
+        self.client = client
+
+        self.on_unknown_tag: OnUnknownTag = on_unknown_tag or IgnoreUnknownTag
         self.container = ParsingContainer()
 
     entity_tags = {
@@ -101,7 +105,7 @@ class HTMLParser(PythonsHTMLParser):
         self.container.feed_text(data)
 
     @classmethod
-    def immediate(cls, data: str, unknown_tag: OnUnknownTag) -> tuple[str, list[TypeMessageEntity]]:
+    def immediate(cls, data: str, client: Optional[TelegramClient] = None, unknown_tag: Optional[OnUnknownTag] = None) -> tuple[str, list[TypeMessageEntity]]:
         """
         Just a shorthand:
          - Initialize self;
@@ -109,7 +113,7 @@ class HTMLParser(PythonsHTMLParser):
          - Return text & entities.
         """
 
-        self: Self = cls(unknown_tag)
+        self: Self = cls(client, unknown_tag)
         self.feed(data)
         return self.container.bundle
 
